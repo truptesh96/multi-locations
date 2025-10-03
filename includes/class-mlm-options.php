@@ -11,8 +11,9 @@ class MLM_Options {
     public static function register_defaults() {
         $defaults = [
             'show_phone' => true,
+            'google_map_api_key' => '',
             'default_map_zoom' => 12,
-        ];
+        ];       
 
         $options = get_option( self::$option_name );
         if ( ! $options ) {

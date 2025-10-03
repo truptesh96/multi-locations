@@ -39,6 +39,17 @@ add_action( 'plugins_loaded', 'mlm_init_plugin' );
 // Load assets
 function mlm_enqueue_assets() {
     wp_enqueue_style( 'mlm-admin-style', MLM_URL . '/assets/css/mlm-admin.css', [], '1.0.0' );
+    
+    // Get Google Maps API key from settings
+    $options = get_option( 'location_settings' );
+    $api_key = isset( $options['google_map_api_key'] ) ? $options['google_map_api_key'] : '';
+    
+    // Only enqueue Google Maps if we have an API key
+    if ( !empty( $api_key ) ) {
+        wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=' . esc_attr( $api_key ) . '&callback=initMap', array(), null, true );
+        wp_script_add_data( 'google-maps', 'async', true );
+        wp_script_add_data( 'google-maps', 'defer', true );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'mlm_enqueue_assets' );
 

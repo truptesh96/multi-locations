@@ -46,19 +46,33 @@ class MLM_Settings {
             'mlm_main_section'
         );
 
-
+        add_settings_field(
+            'default_map_zoom',
+            'Default Map Zoom',
+            [ $this, 'render_default_map_zoom_field' ],
+            'mlm-settings',
+            'mlm_main_section'
+        );
     }
 
     public function sanitize_settings( $input ) {
         $output = [];
         $output['show_phone'] = isset( $input['show_phone'] ) ? (bool) $input['show_phone'] : false;
+        $output['google_map_api_key'] = isset( $input['google_map_api_key'] ) ? sanitize_text_field( $input['google_map_api_key'] ) : '';
+        $output['default_map_zoom'] = isset( $input['default_map_zoom'] ) ? absint( $input['default_map_zoom'] ) : 12;
         return $output;
     }
 
     public function render_google_map_api_key_field() {
-        $options = get_option( 'google_map_api_key' );
-        $api_key = isset( $options['api_key'] ) ? $options['api_key'] : '';
-        echo '<input type="text" name="google_map_api_key[api_key]" value="' . esc_attr( $api_key ) . '">';
+        $options = get_option( 'location_settings' );
+        $api_key = isset( $options['google_map_api_key'] ) ? $options['google_map_api_key'] : '';
+        echo '<input type="text" name="location_settings[google_map_api_key]" value="' . esc_attr( $api_key ) . '" class="regular-text">';
+    }
+
+    public function render_default_map_zoom_field() {
+        $options = get_option( 'location_settings' );
+        $default_map_zoom = isset( $options['default_map_zoom'] ) ? $options['default_map_zoom'] : 12;
+        echo '<input type="number" name="location_settings[default_map_zoom]" value="' . esc_attr( $default_map_zoom ) . '" class="small-text">';
     }
 
     public function render_show_phone_field() {
