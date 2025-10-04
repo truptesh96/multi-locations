@@ -40,8 +40,8 @@ class MLM_Settings {
 
         add_settings_field(
             'show_phone',
-            'Show Phone in Shortcode',
-            [ $this, 'render_show_phone_field' ],
+            'Adjust zoom so it shows maximum locations',
+            [ $this, 'render_adjust_zoom_field' ],
             'mlm-settings',
             'mlm_main_section'
         );
@@ -60,6 +60,7 @@ class MLM_Settings {
         $output['show_phone'] = isset( $input['show_phone'] ) ? (bool) $input['show_phone'] : false;
         $output['google_map_api_key'] = isset( $input['google_map_api_key'] ) ? sanitize_text_field( $input['google_map_api_key'] ) : '';
         $output['default_map_zoom'] = isset( $input['default_map_zoom'] ) ? absint( $input['default_map_zoom'] ) : 12;
+        $output['adjust_zoom'] = isset( $input['adjust_zoom'] ) ? (bool) $input['adjust_zoom'] : false;
         return $output;
     }
 
@@ -75,10 +76,10 @@ class MLM_Settings {
         echo '<input type="number" name="location_settings[default_map_zoom]" value="' . esc_attr( $default_map_zoom ) . '" class="small-text">';
     }
 
-    public function render_show_phone_field() {
+    public function render_adjust_zoom_field() {
         $options = get_option( 'location_settings' );
-        $checked = isset( $options['show_phone'] ) && $options['show_phone'] ? 'checked' : '';
-        echo '<input type="checkbox" name="location_settings[show_phone]" value="1" ' . $checked . '> Yes';
+        $checked = isset( $options['adjust_zoom'] ) && $options['adjust_zoom'] ? 'checked' : '';
+        echo '<input type="checkbox" name="location_settings[adjust_zoom]" value="1" ' . $checked . '> Yes';
     }
 
     public function render_settings_page() {
