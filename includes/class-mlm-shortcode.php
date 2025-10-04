@@ -157,8 +157,10 @@ function initMap() {
     bounds.extend(marker.position);
   });
 
-  if (!bounds.isEmpty()&&$adjust_zoom) map.fitBounds(bounds);
-
+  <?php if ( $adjust_zoom ): ?>
+    if ( !bounds.isEmpty() ) map.fitBounds(bounds);
+  <?php endif; ?>
+  
   // Close info window on map click
   map.addListener('click', () => {
     if (activeInfoWindow) {
