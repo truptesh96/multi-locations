@@ -81,7 +81,12 @@ let map;
 let activeInfoWindow = null; // currently open info window
 
 function initMap() {
-  const mapCenter = { lat: 41.9028, lng: 12.4964 };
+   
+  const mapCenter = { 
+    lat: <?php echo isset($options['center_lat']) && $options['center_lat'] !== '' ? esc_attr($options['center_lat']) : 0; ?>, 
+    lng: <?php echo isset($options['center_lng']) && $options['center_lng'] !== '' ? esc_attr($options['center_lng']) : 0; ?> 
+  };
+
   map = new google.maps.Map(document.getElementById('map'), {
     center: mapCenter,
     zoom: <?php echo $default_map_zoom; ?>,

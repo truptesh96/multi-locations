@@ -39,6 +39,22 @@ class MLM_Settings {
         );
 
         add_settings_field(
+            'center_lat',
+            'Center Latitude',
+            [ $this, 'render_center_lat_field' ],
+            'mlm-settings',
+            'mlm_main_section'
+        );
+
+        add_settings_field(
+            'center_lng',
+            'Center Longitude',
+            [ $this, 'render_center_lng_field' ],
+            'mlm-settings',
+            'mlm_main_section'
+        );
+
+        add_settings_field(
             'show_phone',
             'Adjust zoom so it shows maximum locations',
             [ $this, 'render_adjust_zoom_field' ],
@@ -61,7 +77,21 @@ class MLM_Settings {
         $output['google_map_api_key'] = isset( $input['google_map_api_key'] ) ? sanitize_text_field( $input['google_map_api_key'] ) : '';
         $output['default_map_zoom'] = isset( $input['default_map_zoom'] ) ? absint( $input['default_map_zoom'] ) : 12;
         $output['adjust_zoom'] = isset( $input['adjust_zoom'] ) ? (bool) $input['adjust_zoom'] : false;
+        $output['center_lat'] = isset( $input['center_lat'] ) ? sanitize_text_field( $input['center_lat'] ) : '';
+        $output['center_lng'] = isset( $input['center_lng'] ) ? sanitize_text_field( $input['center_lng'] ) : '';
         return $output;
+    }
+
+    public function render_center_lat_field() {
+        $options = get_option( 'location_settings' );
+        $center_lat = isset( $options['center_lat'] ) ? $options['center_lat'] : '';
+        echo '<input type="text" name="location_settings[center_lat]" value="' . esc_attr( $center_lat ) . '" class="regular-text">';
+    }
+
+    public function render_center_lng_field() {
+        $options = get_option( 'location_settings' );
+        $center_lng = isset( $options['center_lng'] ) ? $options['center_lng'] : '';
+        echo '<input type="text" name="location_settings[center_lng]" value="' . esc_attr( $center_lng ) . '" class="regular-text">';
     }
 
     public function render_google_map_api_key_field() {
