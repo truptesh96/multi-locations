@@ -1,0 +1,11 @@
+
+
+#mlm_location_details input, 
+#mlm_location_details textarea, 
+#mlm_location_details form { max-width: 100%; width: 100%; }
+
+#mlm_location_details .c-row {
+    row-gap: var(--row-gap); column-gap: var(--col-gap);
+}
+
+
