@@ -32,24 +32,7 @@ public function render_locations($args) {
 
   <?php if ( $map_visibility != 'hidden' ) : ?>
     <div id="map"></div>
-      <style>
-      .custom-info-window { position: absolute; min-width: 200px; background: #fff; padding: 12px; transform: translate(-50%, 10px); max-width: 290px; visibility: hidden;
-      transition: 0.7s ease-in-out; opacity: 0;
-      }
-
-      .custom-info-window.show {
-      visibility: visible; opacity: 1;
-      }
-
-      .custom-marker-wrapper {
-      > img { width: 40px; height: 40px; }
-      position: absolute;
-      }
-
-      [data-category="monument"] { background: red; }
-      [data-category="historic"] { background: blue; }
-
-      </style>
+       
 
       <script>
       const locations = [
@@ -107,7 +90,7 @@ public function render_locations($args) {
 
       onAdd() {
       this.div = document.createElement('div');
-      this.div.className = 'custom-marker-wrapper';
+      this.div.className = 'mlm-marker-wrap';
 
       // Marker icon
       const img = document.createElement('img');

@@ -7,6 +7,20 @@
     --row-gap : 20px;
 }
 
+
+/* Front Map Styling */
+.custom-info-window { position: absolute; min-width: 200px; background: #fff; padding: 12px; transform: translate(-50%, 10px); max-width: 290px; visibility: hidden; transition: 0.7s ease-in-out; opacity: 0; }
+.custom-info-window.show { visibility: visible; opacity: 1; }
+
+.mlm-marker-wrap { 
+    position: absolute;
+
+    > img { width: 40px; height: 40px; }
+
+}
+
+[data-category="monument"] { background: red; }
+[data-category="historic"] { background: blue; }
 .mlm-block #map { width: 100%; aspect-ratio: 3/4; margin: 0 0 42px; }
 
 @media (orientation: landscape) {
