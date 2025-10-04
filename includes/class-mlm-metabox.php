@@ -26,32 +26,36 @@ class MLM_Metabox {
         $long = get_post_meta( $post->ID, '_location_long', true );
         ?>
         
-        <div class="c-row">
-            <div class="c-col">
+        <div class="mlm-block o-flex cols-2">
+        <div class="o-flex cols-2">
+            <div class="o-col">
                 <label>Latitude:</label>
                 <input type="text" name="location_lat" value="<?php echo esc_attr( $lat ); ?>">
             </div>
-            <div class="c-col">
+            <div class="o-col">
                 <label>Longitude:</label>
-                <input type="text" name="location_long" value="<?php echo esc_attr( $long ); ?>"
+                <input type="text" name="location_long" value="<?php echo esc_attr( $long ); ?>">
             </div>
         </div>
-        <div class="c-row">
-            <div class="c-col">
+
+        <div class="o-flex">
+            <div class="o-col">
                 <label>Google Map URL:</label>
                 <input type="url" name="location_map" value="<?php echo esc_attr( $map_url ); ?>">
             </div>
-        </div>
-        <div class="c-row">
-            <div class="c-col">
-                <label>Address:</label>
-                <textarea name="location_address" ><?php echo esc_textarea( $address ); ?></textarea>
-            </div>
-            <div class="c-col">
+             <div class="o-col">
                 <label>Phone:</label>
                 <input type="text" name="location_phone" value="<?php echo esc_attr( $phone ); ?>">
             </div>
         </div>
+        <div class="o-flex">
+            <div class="o-col">
+                <label>Address:</label>
+                <textarea name="location_address" ><?php echo esc_textarea( $address ); ?></textarea>
+            </div>
+        </div>
+        </div>
+
         <?php
     }
 

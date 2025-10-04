@@ -38,7 +38,7 @@ add_action( 'plugins_loaded', 'mlm_init_plugin' );
 
 // Load assets
 function mlm_enqueue_assets() {
-    wp_enqueue_style( 'mlm-admin-style', MLM_URL . '/assets/css/mlm-admin.css', [], '1.0.0' );
+    wp_enqueue_style( 'mlm-front-style', MLM_URL . '/assets/css/mlm-front-style.css', [], '1.0.0' );
     
     // Get Google Maps API key from settings
     $options = get_option( 'location_settings' );
@@ -55,12 +55,7 @@ add_action( 'wp_enqueue_scripts', 'mlm_enqueue_assets' );
 
 // Hook into admin enqueue
 add_action( 'admin_enqueue_scripts', 'my_plugin_admin_styles' );
-
 function my_plugin_admin_styles( $hook_suffix ) {
-    $screen = get_current_screen();
-     
-    wp_enqueue_style( 'my-plugin-admin-style', plugin_dir_url( __FILE__ ) . 'assets/css/admin-style.css', array(), '1.0.0', 'all' );
-    
-
-     
+    wp_enqueue_style( 'mlm-front-style', MLM_URL . '/assets/css/mlm-front-style.css', [], '1.0.0' );
+    wp_enqueue_style( 'my-plugin-admin-style', plugin_dir_url( __FILE__ ) . 'assets/css/mlm-admin-style.css', array(), '1.0.0', 'all' );
 }
