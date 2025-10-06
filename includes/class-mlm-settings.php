@@ -29,6 +29,13 @@ class MLM_Settings {
             '__return_false',
             'mlm-settings'
         );
+        
+        add_settings_section(
+            'mlm_location_types_section',
+            'Location Types',
+            [ $this, 'render_location_types_section_description' ],
+            'mlm-settings'
+        );
 
         add_settings_field(
             'google_map_api_key',
