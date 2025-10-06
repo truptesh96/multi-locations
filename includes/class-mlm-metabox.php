@@ -19,12 +19,31 @@ class MLM_Metabox {
     }
 
     public function render_location_metabox( $post ) {
+        wp_nonce_field( 'mlm_location_meta_nonce', 'mlm_location_meta_nonce' );
+        
         $address = get_post_meta( $post->ID, '_location_address', true );
         $phone   = get_post_meta( $post->ID, '_location_phone', true );
         $map_url = get_post_meta( $post->ID, '_location_map', true );
         $lat = get_post_meta( $post->ID, '_location_lat', true );
         $long = get_post_meta( $post->ID, '_location_long', true );
         $loc_type = get_post_meta( $post->ID, '_location_type', true );
+        if ( empty( $loc_type ) ) {
+            $loc_type = 'location';
+        }
+        // Get location types from settings
+        $options = get_option('location_settings');
+        $location_types = isset($options['location_types']) ? $options['location_types'] : [];
+        
+        // Default types if none exist
+        if (empty($location_types)) {
+            $location_types = [
+                'monument' => ['name' => 'Monument'],
+                'historic' => ['name' => 'Historic'],
+                'park' => ['name' => 'Park'],
+                'business' => ['name' => 'Business'],
+                'restaurant' => ['name' => 'Restaurant']
+            ];
+        }
         ?>
         
         <div class="mlm-block o-flex cols-2">
@@ -60,11 +79,11 @@ class MLM_Metabox {
                 <label>Location Type:</label>
                 <select name="location_type">
                     <option value="">-- Select Type --</option>
-                    <option value="monument" <?php selected( $loc_type, 'monument' ); ?>>Monument</option>
-                    <option value="historic" <?php selected( $loc_type, 'historic' ); ?>>Historic</option>
-                    <option value="park" <?php selected( $loc_type, 'park' ); ?>>Park</option>
-                    <option value="business" <?php selected( $loc_type, 'business' ); ?>>Business</option>
-                    <option value="restaurant" <?php selected( $loc_type, 'restaurant' ); ?>>Restaurant</option>
+                    <?php foreach ($location_types as $type_key => $type_data) : ?>
+                        <option value="<?php echo esc_attr($type_key); ?>" <?php selected($loc_type, $type_key); ?>>
+                            <?php echo esc_html($type_data['name']); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
         </div>

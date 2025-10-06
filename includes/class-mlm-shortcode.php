@@ -27,6 +27,40 @@ public function render_locations($args) {
   ob_start();
   echo '<div class="mlm-location-list mlm-block">';
 ?>
+<style>
+.custom-marker-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  border: 2px solid white;
+  transition: transform 0.2s ease;
+}
+.custom-marker-dot:hover {
+  transform: scale(1.2);
+}
+.mlm-marker-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+.custom-info-window {
+  display: none;
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  min-width: 200px;
+  z-index: 10;
+}
+.custom-info-window.show {
+  display: block;
+}
+</style>
  
 
 
@@ -84,9 +118,23 @@ const locdata = Array.from(document.querySelectorAll('.c-info')).map((el, index)
 const locations = locdata;
 console.log(locations);
 
-const ICONS = {
-  location: 'https://i.imgur.com/4NZ6uLY.png'
-};
+// Get location types from settings
+const locationTypes = <?php 
+  $location_types = isset($options['location_types']) ? $options['location_types'] : [];
+  if (empty($location_types)) {
+    $location_types = [
+      'monument' => ['name' => 'Monument', 'icon' => '', 'color' => '#e74c3c'],
+      'historic' => ['name' => 'Historic', 'icon' => '', 'color' => '#3498db'],
+      'park' => ['name' => 'Park', 'icon' => '', 'color' => '#2ecc71'],
+      'business' => ['name' => 'Business', 'icon' => '', 'color' => '#f39c12'],
+      'restaurant' => ['name' => 'Restaurant', 'icon' => '', 'color' => '#9b59b6']
+    ];
+  }
+  echo json_encode($location_types);
+?>;
+
+// Default icon for fallback
+const DEFAULT_ICON = 'https://i.imgur.com/4NZ6uLY.png';
 
 const mapStyles = [
   { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#0f3443" }] },
@@ -131,19 +179,36 @@ function initMap() {
     this.div = document.createElement('div');
     this.div.className = 'mlm-marker-wrap';
 
-    // Marker icon (info toggle trigger)
-    const img = document.createElement('img');
-    img.src = this.iconUrl;
-    img.className = 'custom-marker-icon info-toggle';
-    img.setAttribute('data-category', this.loc.type);
+    // Create marker element
+    if (this.iconUrl !== DEFAULT_ICON) {
+      // Use custom icon if provided
+      const img = document.createElement('img');
+      img.src = this.iconUrl;
+      img.className = 'custom-marker-icon info-toggle';
+      img.setAttribute('data-category', this.loc.type);
+      this.div.appendChild(img);
+    } else if (this.loc.markerColor) {
+      // Use colored dot with type's color
+      const dot = document.createElement('div');
+      dot.className = 'custom-marker-dot info-toggle';
+      dot.style.backgroundColor = this.loc.markerColor;
+      dot.setAttribute('data-category', this.loc.type);
+      this.div.appendChild(dot);
+    } else {
+      // Fallback to default icon
+      const img = document.createElement('img');
+      img.src = this.iconUrl;
+      img.className = 'custom-marker-icon info-toggle';
+      img.setAttribute('data-category', this.loc.type);
+      this.div.appendChild(img);
+    }
 
     // Info window content
     this.infoDiv = document.createElement('div');
     this.infoDiv.className = 'custom-info-window';
     this.infoDiv.innerHTML = buildInfoWindowHtml(this.loc.title, this.loc.payload);
 
-    // Append to wrapper
-    this.div.appendChild(img);
+    // Append info window to wrapper
     this.div.appendChild(this.infoDiv);
     this.getPanes().overlayMouseTarget.appendChild(this.div);
 
@@ -181,8 +246,25 @@ function initMap() {
 }
 
   locations.forEach(loc => {
-    const iconUrl = ICONS[loc.type] || ICONS.location;
-    const marker = new CustomMarker(new google.maps.LatLng(loc.lat, loc.lng), map, iconUrl, loc);
+    // Get icon URL or color from location types
+    let iconUrl = DEFAULT_ICON;
+    let markerColor = '';
+    
+    if (locationTypes[loc.type]) {
+      // Use custom icon if available
+      if (locationTypes[loc.type].icon) {
+        iconUrl = locationTypes[loc.type].icon;
+      }
+      // Store color for custom marker
+      markerColor = locationTypes[loc.type].color || '';
+    }
+    
+    const marker = new CustomMarker(
+      new google.maps.LatLng(loc.lat, loc.lng), 
+      map, 
+      iconUrl, 
+      {...loc, markerColor}
+    );
     bounds.extend(marker.position);
   });
 
