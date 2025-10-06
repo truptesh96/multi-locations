@@ -24,6 +24,7 @@ class MLM_Metabox {
         $map_url = get_post_meta( $post->ID, '_location_map', true );
         $lat = get_post_meta( $post->ID, '_location_lat', true );
         $long = get_post_meta( $post->ID, '_location_long', true );
+        $loc_type = get_post_meta( $post->ID, '_location_type', true );
         ?>
         
         <div class="mlm-block o-flex cols-2">
@@ -54,6 +55,19 @@ class MLM_Metabox {
                 <textarea name="location_address" ><?php echo esc_textarea( $address ); ?></textarea>
             </div>
         </div>
+        <div class="o-flex">
+            <div class="o-col">
+                <label>Location Type:</label>
+                <select name="location_type">
+                    <option value="">-- Select Type --</option>
+                    <option value="monument" <?php selected( $loc_type, 'monument' ); ?>>Monument</option>
+                    <option value="historic" <?php selected( $loc_type, 'historic' ); ?>>Historic</option>
+                    <option value="park" <?php selected( $loc_type, 'park' ); ?>>Park</option>
+                    <option value="business" <?php selected( $loc_type, 'business' ); ?>>Business</option>
+                    <option value="restaurant" <?php selected( $loc_type, 'restaurant' ); ?>>Restaurant</option>
+                </select>
+            </div>
+        </div>
         </div>
 
         <?php
@@ -74,6 +88,9 @@ class MLM_Metabox {
         }
         if ( array_key_exists( 'location_long', $_POST ) ) {
             update_post_meta( $post_id, '_location_long', sanitize_text_field( $_POST['location_long'] ) );
+        }
+        if ( array_key_exists( 'location_type', $_POST ) ) {
+            update_post_meta( $post_id, '_location_type', sanitize_text_field( $_POST['location_type'] ) );
         }
     }
 }
