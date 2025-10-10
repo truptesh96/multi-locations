@@ -8,4 +8,16 @@
     row-gap: var(--row-gap); column-gap: var(--col-gap);
 }
 
+#location-types-table {
+    background: #ffffff;
+    border: 16px solid transparent;
+    border-radius: 14px;
+}
 
+#location-types-table th {
+    padding: 20px;
+}
+
+#location-types-table input[type=color] {
+    height: 30px; width: 30px; 
+}
