@@ -20,8 +20,6 @@ public function render_locations($args) {
   }
 
   $options = get_option( 'location_settings' );
-
-  $adjust_zoom = isset( $options['adjust_zoom'] ) && $options['adjust_zoom'];
   $default_map_zoom = isset( $options['default_map_zoom'] ) ? $options['default_map_zoom'] : 12;
 
   ob_start();
@@ -61,8 +59,6 @@ public function render_locations($args) {
   display: block;
 }
 </style>
- 
-
 
 <?php if ( $map_visibility != 'hidden' ) : ?>
   <div class="map-wrap">
@@ -89,6 +85,7 @@ public function render_locations($args) {
           <?php if ( $phone ): ?>
           <p><strong>Phone:</strong> <?php echo esc_html( $phone ); ?></p>
           <?php endif; ?>
+          <?php echo $location_type; ?>
           <?php if ( $map_url ): ?>
             <p><a href="<?php echo esc_url( $map_url ); ?>" target="_blank">View on Map</a></p>
           <?php endif; ?>
