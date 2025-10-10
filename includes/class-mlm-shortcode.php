@@ -138,6 +138,7 @@ function initMap() {
         onAdd() {
             this.div = document.createElement('div');
             this.div.className = 'mlm-marker-wrap';
+            this.div.setAttribute('data-category', this.loc.type);
 
             const iconSrc = this.iconUrl || DEFAULT_ICON;
             const color = this.loc.markerColor || '#888';
@@ -145,7 +146,7 @@ function initMap() {
             const markerDot = document.createElement('div');
             markerDot.className = 'custom-marker-dot';
             markerDot.style.backgroundColor = color;
-            markerDot.setAttribute('data-category', this.loc.type);
+           
 
             if (this.iconUrl) {
                 const img = document.createElement('img');
