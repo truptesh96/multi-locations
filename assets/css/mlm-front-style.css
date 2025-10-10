@@ -23,51 +23,35 @@
 
 
 /* Front Map Styling */
-.custom-info-window { position: absolute; min-width: 200px; background: #fff; padding: 12px; transform: translate(-50%, 10px); max-width: 290px; visibility: hidden; transition: 0.7s ease-in-out; opacity: 0; }
-.custom-info-window.show { visibility: visible; opacity: 1; }
+   .custom-info-window { position: absolute; background: #fff; padding: 12px; transform: translate(-50%, 10px); min-width: var(--popup-width, 290px); width: 100%; visibility: hidden; transition: 0.7s ease-in-out; opacity: 0; }
+   .custom-info-window.show { visibility: visible; opacity: 1; }
 
-.mlm-marker-wrap { position: absolute;
-    > img { width: 40px; height: 40px; }
-}
+   .mlm-marker-wrap { position: absolute;
+       > img { width: 40px; height: 40px; }
+   }
 
-.mlm-block #map { width: 100%; aspect-ratio: 3/4; margin: 0 0 42px; }
+  .mlm-block #map { width: 100%; aspect-ratio: 3/4; margin: 0 0 42px; }
 
-.custom-marker-dot {
-    width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-      border: 2px solid white;
-      transition: transform 0.2s ease;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+  .custom-marker-dot { width: 44px; height: 44px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      border: 2px solid white; transition: transform 0.2s ease; padding: 8px; display: flex; align-items: center; justify-content: center;
   }
+  
   .custom-marker-dot:hover {
     transform: scale(1.2);
   }
+
+  .custom-info-window address { margin: 14px 0 0; line-height: 1.5; font-style: normal; }
+
   .mlm-marker-wrap {
     position: absolute;
     transform: translate(-50%, -50%);
   }
-  .custom-info-window {
-    display: none;
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    border-radius: 4px;
-    padding: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    min-width: 200px;
-    z-index: 10;
+  .custom-info-window { display: none; position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: white; border-radius: 4px; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    min-width: 200px; z-index: 10;
   }
-  .custom-info-window.show {
-    display: block;
-  }
+
+  .custom-info-window.show { display: block; }
+  .mlm-marker-wrap:has(.custom-info-window.show) { z-index: 1; }
 
 @media (orientation: landscape) {
     .mlm-block #map { aspect-ratio: 16 / 9; }

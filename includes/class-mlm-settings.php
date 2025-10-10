@@ -163,7 +163,7 @@ class MLM_Settings {
     }
     
     public function render_location_types_section_description() {
-        echo '<p>Configure location types with custom icons and colors. These will be used to style locations on the map.</p>';
+        echo '';
     }
     
     public function render_location_types_ui() {
@@ -182,12 +182,14 @@ class MLM_Settings {
         }
         
         ?>
-        <h2 class="title">Location Types</h2>
-        <table class="form-table" id="location-types-table">
+        <div id="location-types-table">
+        <h2>Location Types/Categories</h2>
+        <p>Configure location types with custom icons and colors. These will be used to style locations on the map.</p>
+        <table class="form-table">
             <thead>
                 <tr>
-                    <th>Type Key</th>
                     <th>Display Name</th>
+                    <th>Type Key</th>
                     <th>Icon URL</th>
                     <th>Color</th>
                     <th>Actions</th>
@@ -197,11 +199,11 @@ class MLM_Settings {
                 <?php foreach ($location_types as $type_key => $type_data) : ?>
                 <tr>
                     <td>
-                        <input type="text" value="<?php echo esc_attr($type_key); ?>" readonly class="regular-text">
+                        <input type="text" name="location_settings[location_types][<?php echo esc_attr($type_key); ?>][name]" 
+                        value="<?php echo esc_attr($type_data['name']); ?>" class="regular-text">
                     </td>
                     <td>
-                        <input type="text" name="location_settings[location_types][<?php echo esc_attr($type_key); ?>][name]" 
-                               value="<?php echo esc_attr($type_data['name']); ?>" class="regular-text">
+                        <input type="text" value="<?php echo esc_attr($type_key); ?>" readonly class="regular-text">
                     </td>
                     <td>
                         <div class="media-upload-container">
@@ -249,6 +251,7 @@ class MLM_Settings {
                 </tr>
             </tbody>
         </table>
+        </div>
         
         <script>
         jQuery(document).ready(function($) {

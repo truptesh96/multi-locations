@@ -81,170 +81,177 @@ public function render_locations($args) {
         return { id, title, lat, lng, type, payload: { address, phone, url } };
       });
 
-const locations = locdata;
-console.log(locations);
+        const locations = locdata;
+        console.log(locations);
 
-// Get location types from settings
-const locationTypes = <?php 
-  $location_types = isset($options['location_types']) ? $options['location_types'] : [];  
-  echo json_encode($location_types);
-?>;
+        // Get location types from settings
+        const locationTypes = <?php 
+          $location_types = isset($options['location_types']) ? $options['location_types'] : [];  
+          echo json_encode($location_types);
+        ?>;
 
-// Default icon for fallback
-const DEFAULT_ICON = 'https://i.imgur.com/4NZ6uLY.png';
+        // Default icon for fallback
+        const DEFAULT_ICON = 'https://i.imgur.com/4NZ6uLY.png';
 
-const mapStyles = [
-  { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] }, // Hide all POIs
-  { featureType: "poi.business", elementType: "all", stylers: [{ visibility: "off" }] }, // Hide businesses
-  { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#fcfcfc" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#f4f4f4" }] },
-  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#f9f9f9" }] },
-  { featureType: "landscape", elementType: "geometry.fill", stylers: [{ color: "#f4f4f4" }] },
-];
+        const mapStyles = [
+          { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] }, // Hide all POIs
+          { featureType: "poi.business", elementType: "all", stylers: [{ visibility: "off" }] }, // Hide businesses
+          { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#fcfcfc" }] },
+          { featureType: "road", elementType: "geometry", stylers: [{ color: "#f4f4f4" }] },
+          { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#f9f9f9" }] },
+          { featureType: "landscape", elementType: "geometry.fill", stylers: [{ color: "#f4f4f4" }] },
+        ];
 
-let map;
-let activeInfoWindow = null;
+        let map;
+        let activeInfoWindow = null;
 
+        // Wrap jQuery click handling inside initMap after markers are created
 function initMap() {
-  const mapCenter = {
-    lat: <?php echo isset($options['center_lat']) && $options['center_lat'] !== '' ? esc_attr($options['center_lat']) : 43.559884; ?>,
-    lng: <?php echo isset($options['center_lng']) && $options['center_lng'] !== '' ? esc_attr($options['center_lng']) : -79.581974; ?>
-  };
+    const mapCenter = {
+        lat: <?php echo isset($options['center_lat']) && $options['center_lat'] !== '' ? esc_attr($options['center_lat']) : 43.559884; ?>,
+        lng: <?php echo isset($options['center_lng']) && $options['center_lng'] !== '' ? esc_attr($options['center_lng']) : -79.581974; ?>
+    };
 
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: mapCenter,
-    zoom: <?php echo $default_map_zoom ?: 14; ?>,
-    styles: mapStyles,
-    mapTypeControl: false,
-    streetViewControl: false
-  });
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: mapCenter,
+        zoom: <?php echo $default_map_zoom ?: 14; ?>,
+        styles: mapStyles,
+        mapTypeControl: false,
+        streetViewControl: false
+    });
 
-  const bounds = new google.maps.LatLngBounds();
+    const bounds = new google.maps.LatLngBounds();
+    let activeInfoWindow = null;
 
- class CustomMarker extends google.maps.OverlayView {
-  constructor(position, map, iconUrl, loc) {
-    super();
-    this.position = position;
-    this.map = map;
-    this.iconUrl = iconUrl;
-    this.loc = loc;
-    this.div = null;
-    this.infoDiv = null;
-    this.setMap(map);
-  }
+    class CustomMarker extends google.maps.OverlayView {
+        constructor(position, map, iconUrl, loc) {
+            super();
+            this.position = position;
+            this.map = map;
+            this.iconUrl = iconUrl;
+            this.loc = loc;
+            this.div = null;
+            this.infoDiv = null;
+            this.setMap(map);
+        }
 
-  onAdd() {
-  this.div = document.createElement('div');
-  this.div.className = 'mlm-marker-wrap';
+        onAdd() {
+            this.div = document.createElement('div');
+            this.div.className = 'mlm-marker-wrap';
 
-  const iconSrc = this.iconUrl || DEFAULT_ICON;
-  const color = this.loc.markerColor || '#888'; // fallback color
+            const iconSrc = this.iconUrl || DEFAULT_ICON;
+            const color = this.loc.markerColor || '#888';
 
-  // create colored dot wrapper
-  const markerDot = document.createElement('div');
-  markerDot.className = 'custom-marker-dot';
-  markerDot.style.backgroundColor = color;
-  markerDot.setAttribute('data-category', this.loc.type);
+            const markerDot = document.createElement('div');
+            markerDot.className = 'custom-marker-dot';
+            markerDot.style.backgroundColor = color;
+            markerDot.setAttribute('data-category', this.loc.type);
 
-  // append image if exists
-  if (this.iconUrl) {
-    const img = document.createElement('img');
-    img.src = iconSrc;
-    img.className = 'custom-marker-icon info-toggle';
-    markerDot.appendChild(img);
-  }
+            if (this.iconUrl) {
+                const img = document.createElement('img');
+                img.src = iconSrc;
+                img.className = 'custom-marker-icon info-toggle';
+                markerDot.appendChild(img);
+            }
 
-  this.div.appendChild(markerDot);
+            this.div.appendChild(markerDot);
 
-  // Info window
-  this.infoDiv = document.createElement('div');
-  this.infoDiv.className = 'custom-info-window';
-  this.infoDiv.innerHTML = buildInfoWindowHtml(this.loc.title, this.loc.payload);
-  this.div.appendChild(this.infoDiv);
+            this.infoDiv = document.createElement('div');
+            this.infoDiv.className = 'custom-info-window';
+            this.infoDiv.innerHTML = buildInfoWindowHtml(this.loc.title, this.loc.payload);
+            this.div.appendChild(this.infoDiv);
 
-  this.getPanes().overlayMouseTarget.appendChild(this.div);
+            this.getPanes().overlayMouseTarget.appendChild(this.div);
 
-  this.div.addEventListener('click', (e) => {
-    if (e.target.classList.contains('info-toggle')) {
-      e.stopPropagation();
-      if (activeInfoWindow && activeInfoWindow !== this.infoDiv) {
-        activeInfoWindow.classList.remove('show');
-      }
-      this.infoDiv.classList.toggle('show');
-      activeInfoWindow = this.infoDiv.classList.contains('show') ? this.infoDiv : null;
+            // jQuery click handler for this marker
+            const $marker = jQuery(this.div);
+            $marker.off('click').on('click', '.custom-marker-dot, .custom-marker-icon', (e) => {
+                e.stopPropagation();
+
+                // Close previously open info window
+                if (activeInfoWindow && activeInfoWindow !== this.infoDiv) {
+                    jQuery(activeInfoWindow).removeClass('show');
+                }
+
+                // Toggle current info window
+                jQuery(this.infoDiv).toggleClass('show');
+                activeInfoWindow = jQuery(this.infoDiv).hasClass('show') ? this.infoDiv : null;
+            });
+        }
+
+        draw() {
+            const projection = this.getProjection();
+            if (!projection) return;
+            const pos = projection.fromLatLngToDivPixel(this.position);
+            if (this.div) {
+                this.div.style.left = pos.x + 'px';
+                this.div.style.top = pos.y + 'px';
+            }
+        }
+
+        onRemove() {
+            if (this.div) this.div.remove();
+        }
     }
-  });
+
+    locations.forEach(loc => {
+        let iconUrl = DEFAULT_ICON;
+        let markerColor = '';
+
+        if (locationTypes[loc.type]) {
+            if (locationTypes[loc.type].icon) iconUrl = locationTypes[loc.type].icon;
+            markerColor = locationTypes[loc.type].color || '';
+        }
+
+        const marker = new CustomMarker(
+            new google.maps.LatLng(loc.lat, loc.lng),
+            map,
+            iconUrl,
+            { ...loc, markerColor }
+        );
+        bounds.extend(marker.position);
+    });
+
+    if (!bounds.isEmpty()) map.fitBounds(bounds);
+
+    // Close info window on map click
+    google.maps.event.addListener(map, 'click', () => {
+        if (activeInfoWindow) {
+            jQuery(activeInfoWindow).removeClass('show');
+            activeInfoWindow = null;
+        }
+    });
 }
 
-  draw() {
-    const projection = this.getProjection();
-    if (!projection) return;
-    const pos = projection.fromLatLngToDivPixel(this.position);
-    if (this.div) {
-      this.div.style.left = pos.x + 'px';
-      this.div.style.top = pos.y + 'px';
-    }
-  }
 
-  onRemove() {
-    if (this.div) this.div.remove();
-  }
-}
+        function buildInfoWindowHtml(title, payload) {
+          const urlLink = payload.url ? `<p class="meta"><a href="${escapeHtml(payload.url)}" target="_blank" rel="noopener">View Location</a></p>` : '';
+          return `
+            <div>
+              <h3>${escapeHtml(title)}</h3>
+              <address>${escapeHtml(payload.address || '')}</address>
+              ${urlLink}
+            </div>
+          `;
+        }
 
-  locations.forEach(loc => {
-    // Get icon URL or color from location types
-    let iconUrl = DEFAULT_ICON;
-    let markerColor = '';
-    
-    if (locationTypes[loc.type]) {
-      // Use custom icon if available
-      if (locationTypes[loc.type].icon) {
-        iconUrl = locationTypes[loc.type].icon;
-      }
-      // Store color for custom marker
-      markerColor = locationTypes[loc.type].color || '';
-    }
-    
-    const marker = new CustomMarker(
-      new google.maps.LatLng(loc.lat, loc.lng), 
-      map, 
-      iconUrl, 
-      {...loc, markerColor}
-    );
-    bounds.extend(marker.position);
-  });
+        function escapeHtml(text = '') {
+          return String(text)
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;')
+            .replace(/'/g,'&#039;');
+        }
 
-  if (!bounds.isEmpty()) map.fitBounds(bounds);
+        window.initMap = initMap;
 
-  map.addListener('click', () => {
-    if (activeInfoWindow) {
-      activeInfoWindow.classList.remove('show');
-      activeInfoWindow = null;
-    }
-  });
-}
+        $('document').on('click','.custom-marker-dot:not(hasClass(.show))', function(){
+            
+          $(this).addClass('show');
 
-function buildInfoWindowHtml(title, payload) {
-  const urlLink = payload.url ? `<p class="meta"><a href="${escapeHtml(payload.url)}" target="_blank" rel="noopener">View Location</a></p>` : '';
-  return `
-    <div>
-      <h3>${escapeHtml(title)}</h3>
-      <div>${escapeHtml(payload.address || '')}</div>
-      ${urlLink}
-    </div>
-  `;
-}
+        });
 
-function escapeHtml(text = '') {
-  return String(text)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#039;');
-}
-
-window.initMap = initMap;
 </script>
 
   <?php endif; ?>
