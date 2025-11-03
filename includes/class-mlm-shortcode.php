@@ -11,6 +11,8 @@ public function __construct() {
 public function render_locations($args) {
   $view_type = isset( $args['view_type'] ) ? $args['view_type'] : 'grid cols-3';
   $map_visibility = isset( $args['map_visibility'] ) ? $args['map_visibility'] : 'visible';
+  // Accept both filter_type and common typo fiter_type
+  $filter_type = isset( $args['filter_type'] ) ? $args['filter_type'] : ( isset($args['fiter_type']) ? $args['fiter_type'] : '' );
    
   $qargs = [ 'post_type' => 'location', 'posts_per_page' => -1 ];
   $query = new WP_Query( $qargs );
@@ -21,11 +23,34 @@ public function render_locations($args) {
 
   $options = get_option( 'location_settings' );
   $default_map_zoom = isset( $options['default_map_zoom'] ) ? $options['default_map_zoom'] : 12;
-
+ 
   ob_start();
   echo '<div class="mlm-location-list mlm-block">';
 ?>
 <style>
+.mlm-marker-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  --bg-color: #666;
+  display: grid;
+  place-items: center;
+}
+.mlm-marker-wrap .marker-bg {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-color);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  border: 2px solid white;
+  position: absolute;
+}
+.mlm-marker-wrap .custom-marker-icon {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  z-index: 1;
+  object-fit: contain;
+}
 .custom-marker-dot {
   width: 24px;
   height: 24px;
@@ -37,10 +62,6 @@ public function render_locations($args) {
 }
 .custom-marker-dot:hover {
   transform: scale(1.2);
-}
-.mlm-marker-wrap {
-  position: absolute;
-  transform: translate(-50%, -50%);
 }
 .custom-info-window {
   display: none;
@@ -59,6 +80,21 @@ public function render_locations($args) {
   display: block;
 }
 </style>
+
+<?php if ( $filter_type === 'categories' ) : ?>
+  <div class="mlm-filters">
+    <div class="mlm-cat-filter" role="group" aria-label="Filter locations by category">
+      <?php 
+        $terms = get_terms([ 'taxonomy' => 'location_category', 'hide_empty' => false ]);
+        if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) :
+          foreach ( $terms as $term ) : ?>
+            <button type="button" class="mlm-cat-toggle" data-cat="<?php echo esc_attr( $term->slug ); ?>"><?php echo esc_html( $term->name ); ?></button>
+          <?php endforeach; 
+        endif;
+      ?>
+    </div>
+  </div>
+<?php endif; ?>
 
 <?php if ( $map_visibility != 'hidden' ) : ?>
   <div class="map-wrap">
@@ -79,7 +115,11 @@ public function render_locations($args) {
       $location_type = get_post_meta( $postID, '_location_type', true );
       ?>
       <?php if ( $lat && $long ): ?>
-        <div class="o-col c-info" data-lat="<?php echo esc_attr( $lat ); ?>" data-lng="<?php echo esc_attr( $long ); ?>" data-type="<?php echo esc_attr( $location_type ); ?>">
+        <?php 
+          $cat_slugs = wp_get_post_terms( $postID, 'location_category', [ 'fields' => 'slugs' ] );
+          $cat_data = !empty($cat_slugs) ? implode(',', array_map('esc_attr', $cat_slugs)) : '';
+        ?>
+        <div class="o-col c-info" data-lat="<?php echo esc_attr( $lat ); ?>" data-lng="<?php echo esc_attr( $long ); ?>" data-type="<?php echo esc_attr( $location_type ); ?>" data-cats="<?php echo esc_attr( $cat_data ); ?>">
           <h3 class="c-info--head"><?php the_title(); ?></h3>
           <address class="c-info--address"><?php echo esc_html( $address ); ?></address>
           <?php if ( $phone ): ?>
@@ -100,7 +140,8 @@ public function render_locations($args) {
 
     <?php if ( $map_visibility != 'hidden' ) : ?>
       <script>
-const locdata = Array.from(document.querySelectorAll('.c-info')).map((el, index) => {
+var locEls = Array.from(document.querySelectorAll('.c-info'));
+var locdata = locEls.map((el, index) => {
   const title = el.querySelector('.c-info--head')?.textContent.trim() || '';
   const address = el.querySelector('.c-info--address')?.textContent.trim() || '';
   const phone = el.querySelector('p strong')?.nextSibling?.textContent.trim() || '';
@@ -109,10 +150,11 @@ const locdata = Array.from(document.querySelectorAll('.c-info')).map((el, index)
   const lng = parseFloat(el.dataset.lng);
   const id = index + 1;
   const type = el.dataset.type || 'location';
-  return { id, title, lat, lng, type, payload: { address, phone, url } };
+  const categories = (el.dataset.cats || '').split(',').filter(Boolean);
+  return { id, title, lat, lng, type, categories, payload: { address, phone, url } };
 });
 
-const locations = locdata;
+var locations = locdata;
 console.log(locations);
 
 // Get location types from settings
@@ -133,16 +175,29 @@ const locationTypes = <?php
 // Default icon for fallback
 const DEFAULT_ICON = 'https://i.imgur.com/4NZ6uLY.png';
 
+// Default background color for marker wrap (fallback)
+var WRAP_BG_DEFAULT = '#666';
+
 const mapStyles = [
-  { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#0f3443" }] },
+  { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#8FABD4" }] },
   { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
-  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#2c3e50" }] },
+  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#1f1f1f" }] },
   { featureType: "landscape", elementType: "geometry.fill", stylers: [{ color: "#dfe6e9" }] },
-  { featureType: "poi.park", elementType: "geometry.fill", stylers: [{ color: "#55efc4" }] }
+  { featureType: "poi.park", elementType: "geometry.fill", stylers: [{ color: "#B7B89F" }] },
+  { featureType: "poi.business", 
+      elementType: "labels",
+      stylers: [{ visibility: "off" }]
+  },
+  {
+    featureType: "road",
+    elementType: "labels",
+    stylers: [{ visibility: "on" }]
+  }
 ];
 
 let map;
 let activeInfoWindow = null;
+const markers = [];
 
 function initMap() {
   const mapCenter = {
@@ -175,10 +230,17 @@ function initMap() {
   onAdd() {
     this.div = document.createElement('div');
     this.div.className = 'mlm-marker-wrap';
+    // Set CSS variable for background color (per-type or default)
+    const bgColor = this.loc.markerColor || WRAP_BG_DEFAULT;
+    this.div.style.setProperty('--bg-color', bgColor);
 
     // Create marker element
     if (this.iconUrl !== DEFAULT_ICON) {
       // Use custom icon if provided
+      const bg = document.createElement('div');
+      bg.className = 'marker-bg info-toggle';
+      bg.setAttribute('data-category', this.loc.type);
+      this.div.appendChild(bg);
       const img = document.createElement('img');
       img.src = this.iconUrl;
       img.className = 'custom-marker-icon info-toggle';
@@ -240,9 +302,15 @@ function initMap() {
   onRemove() {
     if (this.div) this.div.remove();
   }
+
+  setVisible(visible) {
+    if (this.div) {
+      this.div.style.display = visible ? '' : 'none';
+    }
+  }
 }
 
-  locations.forEach(loc => {
+  locations.forEach((loc, idx) => {
     // Get icon URL or color from location types
     let iconUrl = DEFAULT_ICON;
     let markerColor = '';
@@ -263,6 +331,7 @@ function initMap() {
       {...loc, markerColor}
     );
     bounds.extend(marker.position);
+    markers.push({ marker, loc, idx });
   });
 
   if (!bounds.isEmpty()) map.fitBounds(bounds);
@@ -273,6 +342,33 @@ function initMap() {
       activeInfoWindow = null;
     }
   });
+
+  // Category filter interactions
+  const filterWrap = document.querySelector('.mlm-cat-filter');
+  if (filterWrap) {
+    filterWrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('.mlm-cat-toggle');
+      if (!btn) return;
+      btn.classList.toggle('is-active');
+      applyCategoryFilters();
+    });
+  }
+
+  function applyCategoryFilters() {
+    const active = Array.from(document.querySelectorAll('.mlm-cat-toggle.is-active')).map(b => b.dataset.cat);
+    const showAll = active.length === 0;
+    // Filter list
+    locEls.forEach((el, i) => {
+      const cats = (el.dataset.cats || '').split(',').filter(Boolean);
+      const match = showAll || cats.some(c => active.includes(c));
+      el.style.display = match ? '' : 'none';
+    });
+    // Filter markers
+    markers.forEach(entry => {
+      const match = showAll || entry.loc.categories.some(c => active.includes(c));
+      entry.marker.setVisible(match);
+    });
+  }
 }
 
 function buildInfoWindowHtml(title, payload) {

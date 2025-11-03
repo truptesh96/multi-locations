@@ -19,8 +19,7 @@
 
 }
 
-[data-category="monument"] { background: red; }
-[data-category="historic"] { background: blue; }
+ 
 .mlm-block #map { width: 100%; aspect-ratio: 3/4; margin: 0 0 42px; }
 
 @media (orientation: landscape) {

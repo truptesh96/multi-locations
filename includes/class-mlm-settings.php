@@ -87,6 +87,14 @@ class MLM_Settings {
             'mlm-settings',
             'mlm_main_section'
         );
+
+        add_settings_field(
+            'marker_bg_color',
+            'Marker Background Color',
+            [ $this, 'render_marker_bg_color_field' ],
+            'mlm-settings',
+            'mlm_main_section'
+        );
     }
 
     public function sanitize_settings( $input ) {
@@ -97,6 +105,7 @@ class MLM_Settings {
         $output['adjust_zoom'] = isset( $input['adjust_zoom'] ) ? (bool) $input['adjust_zoom'] : false;
         $output['center_lat'] = isset( $input['center_lat'] ) ? sanitize_text_field( $input['center_lat'] ) : '';
         $output['center_lng'] = isset( $input['center_lng'] ) ? sanitize_text_field( $input['center_lng'] ) : '';
+        $output['marker_bg_color'] = isset( $input['marker_bg_color'] ) ? sanitize_hex_color( $input['marker_bg_color'] ) : '#3498db';
         
         // Location types
         if (isset($input['location_types']) && is_array($input['location_types'])) {
@@ -144,6 +153,13 @@ class MLM_Settings {
         $options = get_option( 'location_settings' );
         $checked = isset( $options['adjust_zoom'] ) && $options['adjust_zoom'] ? 'checked' : '';
         echo '<input type="checkbox" name="location_settings[adjust_zoom]" value="1" ' . $checked . '> Yes';
+    }
+
+    public function render_marker_bg_color_field() {
+        $options = get_option( 'location_settings' );
+        $marker_bg_color = isset( $options['marker_bg_color'] ) ? $options['marker_bg_color'] : '#3498db';
+        echo '<input type="color" name="location_settings[marker_bg_color]" value="' . esc_attr( $marker_bg_color ) . '">';
+        echo '<p class="description">This color will be applied as a CSS variable (--bg-color) on the marker wrapper element.</p>';
     }
 
     public function render_settings_page() {
